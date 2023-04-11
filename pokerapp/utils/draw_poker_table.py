@@ -42,10 +42,13 @@ def draw_poker_table(players: List[Player], current_player: Player):
     # draw the circles (players) around the table. The distance between the players is equal.
     for i, player in enumerate(players):
         angle = 2 * np.pi * i / len(players)
-        circle_center = (oval_center[0] + (oval_a - circle_radius) * np.cos(angle),
+
+        cx, cy = (oval_center[0] + (oval_a - circle_radius) * np.cos(angle),
                          oval_center[1] + (oval_b - circle_radius) * np.sin(angle))
         color = player == current_player and 'red' or 'black'
-        __draw_circle(ax, circle_center, circle_radius, color=color)
+        __draw_circle(ax, (cx, cy), circle_radius, color=color)
+
+        plt.text(cx - 0.3, cy, player.user_name, fontsize=8, color='blue')
 
     ax.set_aspect('equal', adjustable='box')
     plt.axis('off')
