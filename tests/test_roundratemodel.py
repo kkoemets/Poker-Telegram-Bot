@@ -34,13 +34,14 @@ class TestRoundRateModel(unittest.TestCase):
 
     def _next_player(self, game: Game, autorized: Money) -> Player:
         self._user_id += 1
-        wallet_manager = WalletManagerModel(self._user_id, kv=self._kv)
+        wallet_manager = WalletManagerModel(str(self._user_id), kv=self._kv)
         wallet_manager.authorize_all("clean_wallet_game")
         wallet_manager.inc(autorized)
         wallet_manager.authorize(game.id, autorized)
         game.pot += autorized
         p = Player(
-            user_id=self._user_id,
+            user_id=str(self._user_id),
+            user_name=str(self._user_id),
             mention_markdown="@test",
             wallet=wallet_manager,
             ready_message_id="",
@@ -56,7 +57,7 @@ class TestRoundRateModel(unittest.TestCase):
 
     @staticmethod
     def _create_player(user_id: str) -> Player:
-        player: Player = Player(user_id, user_id, MagicMock(spec=Wallet), '0')
+        player: Player = Player(user_id, user_id, user_id, MagicMock(spec=Wallet), '0')
         player.bet_amount = 0
         player.wallet.authorize = lambda game_id, amount: setattr(player, 'bet_amount', player.bet_amount + amount)
         player.round_rate = 0

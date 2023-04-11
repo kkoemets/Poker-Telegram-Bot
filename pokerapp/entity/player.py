@@ -1,4 +1,4 @@
-from pokerapp.entity.entities import UserId, Mention
+from pokerapp.entity.entities import UserId, Mention, UserName
 from pokerapp.entity.playerstate import PlayerState
 from pokerapp.entity.wallet import Wallet
 
@@ -7,11 +7,13 @@ class Player:
     def __init__(
             self,
             user_id: UserId,
+            user_name: UserName,
             mention_markdown: Mention,
             wallet: Wallet,
             ready_message_id: str,
     ):
         self.user_id = user_id
+        self.user_name = user_name
         self.mention_markdown = mention_markdown
         self.state = PlayerState.ACTIVE
         self.wallet = wallet

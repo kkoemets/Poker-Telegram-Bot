@@ -116,6 +116,7 @@ class PokerBotModel:
 
         player = Player(
             user_id=user.id,
+            user_name=user.full_name,
             mention_markdown=user.mention_markdown(),
             wallet=WalletManagerModel(user.id, self._kv),
             ready_message_id=update.effective_message.message_id,

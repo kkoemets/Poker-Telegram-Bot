@@ -42,7 +42,7 @@ class TestPokerBotModel(unittest.TestCase):
 
     @staticmethod
     def _create_player(user_id: str, cards: []) -> Player:
-        player: Player = Player(user_id, user_id, MagicMock(spec=Wallet), '0')
+        player: Player = Player(user_id, user_id, user_id, MagicMock(spec=Wallet), '0')
         player.user_id = user_id
         player.test_amount = 0
         player.wallet.inc = lambda amount: setattr(player, 'test_amount', player.test_amount + amount)
