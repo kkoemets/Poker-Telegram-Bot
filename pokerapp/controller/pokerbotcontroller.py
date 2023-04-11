@@ -24,8 +24,8 @@ class PokerBotController:
             ('money', 'Show your money.', self._handle_money),
             ('ban', 'Ban user.', self._handle_ban),
             ('cards', 'Show your cards.', self._handle_cards),
-            ('reset_game', 'Reset game and refund players', self._reset_game),
-            ('top_up', 'Top up your balance.', self._top_up),
+            ('reset_game', 'Reset game and refund players', self._handle_reset_game),
+            ('top_up', 'Top up your balance.', self._handle_top_up),
         ]
 
         model._bot.set_my_commands(list(map(lambda e: BotCommand('/' + e[0], e[1]), commands)))
@@ -61,10 +61,10 @@ class PokerBotController:
     def _handle_money(self, update: Update, context: CallbackContext) -> None:
         self._model.bonus(update, context)
 
-    def _reset_game(self, update: Update, context: CallbackContext) -> None:
+    def _handle_reset_game(self, update: Update, context: CallbackContext) -> None:
         self._model.reset_game(update, context)
 
-    def _top_up(self, update: Update, context: CallbackContext) -> None:
+    def _handle_top_up(self, update: Update, context: CallbackContext) -> None:
         self._model.top_up(update, context)
 
     def _handle_button_clicked(self, update: Update, context: CallbackContext) -> None:
