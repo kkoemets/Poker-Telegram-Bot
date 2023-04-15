@@ -13,7 +13,7 @@ from pokerapp.entity.gamestate import GameState
 from pokerapp.entity.player import Player
 from pokerapp.entity.playerbet import PlayerBet
 from pokerapp.entity.wallet import Wallet
-from pokerapp.model.pokerbotmodel import PokerBotModel
+from pokerapp.model.pokerbotmodel import PokerBotModel, KEY_OLD_PLAYERS
 from pokerapp.view.pokerbotview import PokerBotViewer
 
 
@@ -208,7 +208,7 @@ class TestPokerBotModel(unittest.TestCase):
         model._bot.get_chat_member_count = lambda chat_id: 3
 
         context = MagicMock(spec=CallbackContext)
-        context.chat_data.get = lambda key, arr: []
+        context.chat_data = {KEY_OLD_PLAYERS: [], 'get': lambda key, arr: context.chat_data[key]}
 
         self.assertEqual(model._view.text, '')
 
@@ -217,6 +217,27 @@ class TestPokerBotModel(unittest.TestCase):
         model.start(MagicMock(spec=Update), context)
 
         self.assertEqual(model._view.text, 'The game is started! 🃏')
+        self.assertListEqual([p.user_id for p in [player_one, player_two]], context.chat_data[KEY_OLD_PLAYERS])
+
+        game.reset()
+        game.players = [player_one, player_two]
+        model.start(MagicMock(spec=Update), context)
+
+        self.assertEqual(model._view.text, 'The game is started! 🃏')
+        self.assertListEqual([p.user_id for p in [player_two, player_one]], context.chat_data[KEY_OLD_PLAYERS])
+
+        game.reset()
+
+        player_three = self._create_player('3', [])
+        player_three.wallet.value = lambda: 1000
+
+        game.players = [player_one, player_two, player_three]
+        model.start(MagicMock(spec=Update), context)
+
+        self.assertEqual(model._view.text, 'The game is started! 🃏')
+        self.assertListEqual([p.user_id for p in [player_three, player_one, player_two]],
+                             context.chat_data[KEY_OLD_PLAYERS])
+
 
 if __name__ == '__main__':
     unittest.main()
