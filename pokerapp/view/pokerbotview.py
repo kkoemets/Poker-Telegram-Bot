@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-
+import io
+import os
 from io import BytesIO
 from typing import Union
+from PIL import Image
 
 from telegram import (
     Message,
@@ -24,6 +26,8 @@ from pokerapp.entity.entities import (
 from pokerapp.entity.game import Game
 from pokerapp.entity.player import Player
 from pokerapp.entity.playeraction import PlayerAction
+from pokerapp.entity.poker_table_info import PokerTableInfo
+from pokerapp.utils.asset_helper import AssetHelper
 from pokerapp.view.deskimagegenerator import DeskImageGenerator
 
 
@@ -48,7 +52,6 @@ class PokerBotViewer:
         )
 
     def send_photo(self, chat_id: ChatId, photo: Union[FileInput, 'PhotoSize']) -> None:
-        # TODO: photo to args.
         self._bot.send_photo(
             chat_id=chat_id,
             photo=photo,
@@ -231,4 +234,25 @@ class PokerBotViewer:
         self._bot.delete_message(
             chat_id=chat_id,
             message_id=message_id,
+        )
+
+    def show_poker_table_with_players(self, chat_id: ChatId, poker_table_info: PokerTableInfo) -> Image:
+        image_poker_table = AssetHelper.get_image_poker_table()
+        image1_width, image1_height = image_poker_table.size
+        image2_width, image2_height = poker_table_info.avatar_max_size
+        new_image = Image.new('RGB', (image1_width, image1_height + image2_height * 2), (255, 255, 255))
+        new_image.paste(image_poker_table, (0, image2_height))
+
+        for player in poker_table_info.players:
+            new_image.paste(player.avatar, player.image_position_for_player)
+
+        with io.BytesIO() as output:
+            new_image.save(output, format='JPEG')
+            image_poker_table_with_players = output.getvalue()
+
+        self._bot.send_photo(
+            chat_id=chat_id,
+            photo=image_poker_table_with_players,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_notification=True,
         )

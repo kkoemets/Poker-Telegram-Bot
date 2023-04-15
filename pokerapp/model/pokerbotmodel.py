@@ -5,6 +5,7 @@ import traceback
 from threading import Timer
 from typing import List
 
+from PIL import Image
 from telegram import Message, ReplyKeyboardMarkup, Update, Bot
 from telegram.ext import Handler, CallbackContext
 
@@ -723,12 +724,26 @@ class PokerBotModel:
         )
 
     def show_table(self, update, context):
-        from pokerapp.utils.draw_poker_table import draw_poker_table
+        from pokerapp.entity.poker_table_info import PokerTableInfo
+        from pokerapp.entity.poker_table_info import PokerTablePlayerInfo
+        from pokerapp.utils.asset_helper import AssetHelper
 
         game = self._game_from_context(context)
         chat_id = update.effective_message.chat_id
-        players = game.players
         current_player = self._current_turn_player(game)
 
-        table_image = draw_poker_table(players=players, current_player=current_player)
-        self._view.send_photo(chat_id=chat_id, photo=table_image)
+        image_anonymous = AssetHelper.get_image_avatar_anonymous()
+
+        poker_table_player_infos = []
+        for chair_id, player in enumerate(game.players * 6):
+            poker_table_player_info = PokerTablePlayerInfo(
+                avatar=image_anonymous,  # TODO: add unique avatar for each player
+                name=player.user_name,
+                money=player.wallet.value(),
+                chair_id=chair_id,  # TODO: assume atm that the players are ordered; we need to persist the order
+                is_current_turn=player == current_player,
+            )
+            poker_table_player_infos.append(poker_table_player_info)
+        poker_table_info = PokerTableInfo(players=poker_table_player_infos)
+
+        self._view.show_poker_table_with_players(chat_id=chat_id, poker_table_info=poker_table_info)
