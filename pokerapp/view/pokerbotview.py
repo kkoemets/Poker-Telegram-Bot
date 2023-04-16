@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import io
-import os
 from io import BytesIO
 from typing import Union
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from telegram import (
     Message,
@@ -16,6 +15,7 @@ from telegram import (
 )
 from telegram.utils.types import FileInput
 
+from pokerapp.constants import COLOR_WHITE
 from pokerapp.entity.cards import Cards
 from pokerapp.entity.entities import (
     MessageId,
@@ -238,13 +238,25 @@ class PokerBotViewer:
 
     def show_poker_table_with_players(self, chat_id: ChatId, poker_table_info: PokerTableInfo) -> Image:
         image_poker_table = AssetHelper.get_image_poker_table()
-        image1_width, image1_height = image_poker_table.size
-        image2_width, image2_height = poker_table_info.avatar_max_size
-        new_image = Image.new('RGB', (image1_width, image1_height + image2_height * 2), (255, 255, 255))
-        new_image.paste(image_poker_table, (0, image2_height))
+        table_width, table_height = image_poker_table.size
+        avatar_width, avatar_height = poker_table_info.avatar_max_size
+        new_image_width, new_image_height = table_width, table_height + avatar_height * 2
+
+        new_image = Image.new('RGB', (new_image_width, new_image_height), COLOR_WHITE)
+        new_image.paste(image_poker_table, (0, avatar_height))
 
         for player in poker_table_info.players:
-            new_image.paste(player.avatar, player.image_position_for_player)
+            x, y = player.image_position_for_player
+            new_image.paste(player.avatar, (x, y))
+
+        draw = ImageDraw.Draw(new_image)
+        player_name_font = ImageFont.truetype('./assets/FreeMono.ttf', 24)
+
+        width_offset = 80
+        height_offset = 10
+        for player in poker_table_info.players:
+            x, y = player.image_position_for_player
+            draw.text((x - width_offset, y + avatar_height + height_offset), player.name, font=player_name_font, fill=(255, 0, 0))
 
         with io.BytesIO() as output:
             new_image.save(output, format='JPEG')

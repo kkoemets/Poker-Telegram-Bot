@@ -10,6 +10,7 @@ from telegram import Message, ReplyKeyboardMarkup, Update, Bot
 from telegram.ext import Handler, CallbackContext
 
 from pokerapp.config import Config
+from pokerapp.constants import IMAGE_SMALL
 from pokerapp.entity.cards import Cards
 from pokerapp.entity.entities import (
     ChatId,
@@ -44,6 +45,7 @@ MIN_PLAYERS = 2
 ONE_DAY = 86400
 MAX_TIME_FOR_TURN = datetime.timedelta(minutes=2)
 DESCRIPTION_FILE = "assets/description_bot.md"
+POKER_HAND_FILE = "./assets/poker_hand.jpg"
 
 
 class PokerBotModel:
@@ -176,7 +178,7 @@ class PokerBotModel:
                 chat_id=chat_id,
                 text=text,
             )
-            self._view.send_photo(chat_id=chat_id, photo=open("./assets/poker_hand.jpg", 'rb'))
+            self._view.send_photo(chat_id=chat_id, photo=open(POKER_HAND_FILE, 'rb'))
 
             if update.effective_chat.type == 'private':
                 UserPrivateChatModel(user_id=user_id, kv=self._kv) \
@@ -733,9 +735,11 @@ class PokerBotModel:
         current_player = self._current_turn_player(game)
 
         image_anonymous = AssetHelper.get_image_avatar_anonymous()
+        image_anonymous = AssetHelper.resize_square(image_anonymous, IMAGE_SMALL)
 
         poker_table_player_infos = []
-        for chair_id, player in enumerate(game.players * 6):
+        game.players *= 8  # TODO: remove
+        for chair_id, player in enumerate(game.players):
             poker_table_player_info = PokerTablePlayerInfo(
                 avatar=image_anonymous,  # TODO: add unique avatar for each player
                 name=player.user_name,

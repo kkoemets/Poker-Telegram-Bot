@@ -1,17 +1,19 @@
-import os
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
 from PIL import Image
 
+from pokerapp.constants import MAX_PLAYERS
 
 CHAIR_POSITIONS = {
     0: (500, 100),
-    1: (900, 100),
-    2: (1300, 100),
-    3: (500, 1200),
-    4: (900, 1200),
-    5: (1300, 1200),
+    1: (800, 100),
+    2: (1100, 100),
+    3: (1400, 100),
+    4: (500, 1150),
+    5: (800, 1150),
+    6: (1100, 1150),
+    7: (1400, 1150),
 }
 
 
@@ -25,6 +27,8 @@ class PokerTablePlayerInfo:
 
     @property
     def image_position_for_player(self) -> Tuple[int, int]:
+        assert 0 <= self.chair_id < MAX_PLAYERS
+
         return CHAIR_POSITIONS[self.chair_id]
 
 
@@ -34,6 +38,8 @@ class PokerTableInfo:
 
     @property
     def avatar_max_size(self) -> Tuple[int, int]:
+        assert len(self.players) > 0
+
         return max(player.avatar.size for player in self.players)
 
 

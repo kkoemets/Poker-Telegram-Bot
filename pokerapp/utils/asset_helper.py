@@ -3,6 +3,9 @@ import os
 from PIL import Image
 
 
+SIZE_SMALL = 80
+
+
 class AssetHelper:
     @staticmethod
     def get_image_poker_table() -> Image:
@@ -20,3 +23,6 @@ class AssetHelper:
         except FileNotFoundError:
             raise FileNotFoundError('Anonymous avatar image not found')
 
+    @staticmethod
+    def resize_square(image, new_size=80) -> Image:
+        return image.resize((new_size, new_size))
