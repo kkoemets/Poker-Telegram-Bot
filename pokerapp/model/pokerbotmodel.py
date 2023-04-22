@@ -738,7 +738,6 @@ class PokerBotModel:
         image_anonymous = AssetHelper.resize_square(image_anonymous, IMAGE_SMALL)
 
         poker_table_player_infos = []
-        game.players *= 8  # TODO: remove
         for chair_id, player in enumerate(game.players):
             poker_table_player_info = PokerTablePlayerInfo(
                 avatar=image_anonymous,  # TODO: add unique avatar for each player

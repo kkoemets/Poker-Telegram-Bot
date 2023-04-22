@@ -16,6 +16,30 @@ CHAIR_POSITIONS = {
     7: (1400, 1150),
 }
 
+COMMON_CARD_LOCATION = {
+    0: (500, 500),
+    1: (600, 500),
+    2: (700, 500),
+    3: (800, 500),
+    4: (900, 500),
+}
+
+ROW_UP = 200
+ROW_DOWN = 1100
+COL1, COL2, COL3, COL4 = 500, 800, 1100, 1400
+DIFF = 50
+
+PLAYER_CARD_LOCATIONS = {
+    0: ((COL1, ROW_UP), (COL1 + DIFF, ROW_UP)),
+    1: ((COL2, ROW_UP), (COL2 + DIFF, ROW_UP)),
+    2: ((COL3, ROW_UP), (COL3 + DIFF, ROW_UP)),
+    3: ((COL4, ROW_UP), (COL4 + DIFF, ROW_UP)),
+    4: ((COL1, ROW_DOWN), (COL1 + DIFF, ROW_DOWN)),
+    5: ((COL2, ROW_DOWN), (COL2 + DIFF, ROW_DOWN)),
+    6: ((COL3, ROW_DOWN), (COL3 + DIFF, ROW_DOWN)),
+    7: ((COL4, ROW_DOWN), (COL4 + DIFF, ROW_DOWN)),
+}
+
 
 @dataclass(frozen=True)
 class PokerTablePlayerInfo:
@@ -31,6 +55,12 @@ class PokerTablePlayerInfo:
 
         return CHAIR_POSITIONS[self.chair_id]
 
+    @property
+    def card_positions_for_player(self) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+        assert 0 <= self.chair_id < MAX_PLAYERS
+
+        return PLAYER_CARD_LOCATIONS[self.chair_id]
+
 
 @dataclass(frozen=True)
 class PokerTableInfo:
@@ -42,4 +72,7 @@ class PokerTableInfo:
 
         return max(player.avatar.size for player in self.players)
 
+    @property
+    def common_card_locations(self) -> List[Tuple[int, int]]:
+        return list(COMMON_CARD_LOCATION.values())
 

@@ -251,6 +251,8 @@ class PokerBotViewer:
             x, y = player.image_position_for_player
             new_image.paste(player.avatar, (x, y))
 
+        # TODO: draw square around active player
+
         # Add player names below their avatars
         width_offset = 80
         height_offset = 10
@@ -259,11 +261,14 @@ class PokerBotViewer:
         for player in poker_table_info.players:
             x, y = player.image_position_for_player
             draw.text((x - width_offset, y + avatar_height + height_offset), player.name, font=player_name_font, fill=COLOR_BLACK)
+            # TODO: add money left
 
         # Convert the image into bytearray to keep it in memory and avoiding saving it to disk
         with io.BytesIO() as output:
             new_image.save(output, format='JPEG')
             image_poker_table_with_players = output.getvalue()
+
+        # TODO: Draw cards
 
         self._bot.send_photo(
             chat_id=chat_id,
