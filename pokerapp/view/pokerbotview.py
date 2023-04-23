@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-import io
 from io import BytesIO
 from typing import Union
 from PIL import Image, ImageDraw
-
 from telegram import (
     Message,
     ParseMode,
@@ -287,7 +285,7 @@ class PokerBotViewer:
             new_image.paste(player_unknown_card, player_card_2_pos)
 
         # Finalize combined image. Convert the image into bytearray to keep it in memory and avoiding saving it to disk
-        with io.BytesIO() as output:
+        with BytesIO() as output:
             new_image.save(output, format='JPEG')
             image_poker_table_with_players = output.getvalue()
 

@@ -27,7 +27,6 @@ class PokerBotController:
             ('reset_game', 'Reset game and refund players', self._handle_reset_game),
             ('top_up', 'Top up your balance.', self._handle_top_up),
             ('table', 'Show the table.', self._show_table),
-            ('table', 'Show the table.', self._show_table),
         ]
 
         model._bot.set_my_commands(list(map(lambda e: BotCommand('/' + e[0], e[1]), commands)))
