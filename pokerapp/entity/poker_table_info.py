@@ -5,6 +5,19 @@ from PIL import Image
 
 from pokerapp.constants import MAX_PLAYERS
 
+"""
+Coordinates of the players.
+
+        P1              P2              P3               P4
+===================================================================
+|                                                                 |
+|                                                                 |
+|                                                                 |
+|                                                                 |
+|                                                                 |
+===================================================================
+        P5              P6              P7               P8
+"""
 CHAIR_POSITIONS = {
     0: (500, 100),
     1: (800, 100),
@@ -16,33 +29,63 @@ CHAIR_POSITIONS = {
     7: (1400, 1150),
 }
 
+"""
+Coordinates of the cards of the players. There are 2 cards at every coordinate with SPACING between them.
+
+===================================================================
+|                                                                 |
+|                         COMMON CARDS:                           |
+|                       [0] [1] [2] [3] [4]                       |
+|                                                                 |
+|                                                                 |
+===================================================================
+"""
+COMMON_CARD_WIDTH = 100
+COMMON_CARD_WIDTH_SMALL = 50
+COMMON_CARD_HEIGHT = 130
+COMMON_CARD_HEIGHT_SMALL = 65
 COMMON_CARD_LOCATION = {
-    0: (500, 500),
-    1: (600, 500),
-    2: (700, 500),
-    3: (800, 500),
-    4: (900, 500),
+    0: (770, 620),
+    1: (880, 620),
+    2: (990, 620),
+    3: (1100, 620),
+    4: (1210, 620),
 }
 
-ROW_UP = 200
-ROW_DOWN = 1100
+"""
+Coordinates of the cards of the players. There are 2 cards at every coordinate with SPACING between them.
+
+===================================================================
+|  (row1, col1)    (row1, col2)    (row1, col3)     (row1, col4)  |
+|                                                                 |
+|                                                                 |
+|                                                                 |
+|  (row1, col1)    (row1, col2)    (row1, col3)     (row1, col4)  |
+===================================================================
+"""
+ROW1 = 350
+ROW2 = 950
 COL1, COL2, COL3, COL4 = 500, 800, 1100, 1400
-DIFF = 50
+SPACING = 68
 
 PLAYER_CARD_LOCATIONS = {
-    0: ((COL1, ROW_UP), (COL1 + DIFF, ROW_UP)),
-    1: ((COL2, ROW_UP), (COL2 + DIFF, ROW_UP)),
-    2: ((COL3, ROW_UP), (COL3 + DIFF, ROW_UP)),
-    3: ((COL4, ROW_UP), (COL4 + DIFF, ROW_UP)),
-    4: ((COL1, ROW_DOWN), (COL1 + DIFF, ROW_DOWN)),
-    5: ((COL2, ROW_DOWN), (COL2 + DIFF, ROW_DOWN)),
-    6: ((COL3, ROW_DOWN), (COL3 + DIFF, ROW_DOWN)),
-    7: ((COL4, ROW_DOWN), (COL4 + DIFF, ROW_DOWN)),
+    0: ((COL1, ROW1), (COL1 + SPACING, ROW1)),
+    1: ((COL2, ROW1), (COL2 + SPACING, ROW1)),
+    2: ((COL3, ROW1), (COL3 + SPACING, ROW1)),
+    3: ((COL4, ROW1), (COL4 + SPACING, ROW1)),
+    4: ((COL1, ROW2), (COL1 + SPACING, ROW2)),
+    5: ((COL2, ROW2), (COL2 + SPACING, ROW2)),
+    6: ((COL3, ROW2), (COL3 + SPACING, ROW2)),
+    7: ((COL4, ROW2), (COL4 + SPACING, ROW2)),
 }
 
 
 @dataclass(frozen=True)
 class PokerTablePlayerInfo:
+    """
+    Responsible for keeping coordinate info of individual player of the table. Use only with PokerTableInfo class.
+    """
+
     avatar: Image
     name: str
     money: int
@@ -64,6 +107,10 @@ class PokerTablePlayerInfo:
 
 @dataclass(frozen=True)
 class PokerTableInfo:
+    """
+    Responsible for keeping coordinate info of where players & cards are located.
+    """
+
     players: List[PokerTablePlayerInfo] = field(default_factory=list)
 
     @property
@@ -75,4 +122,3 @@ class PokerTableInfo:
     @property
     def common_card_locations(self) -> List[Tuple[int, int]]:
         return list(COMMON_CARD_LOCATION.values())
-

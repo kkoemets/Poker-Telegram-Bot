@@ -735,7 +735,7 @@ class PokerBotModel:
         current_player = self._current_turn_player(game)
 
         image_anonymous = AssetHelper.get_image_avatar_anonymous()
-        image_anonymous = AssetHelper.resize_square(image_anonymous, IMAGE_SMALL)
+        image_anonymous = AssetHelper.resize(image_anonymous, IMAGE_SMALL, IMAGE_SMALL)
 
         poker_table_player_infos = []
         for chair_id, player in enumerate(game.players):

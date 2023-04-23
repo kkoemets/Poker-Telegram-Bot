@@ -19,8 +19,12 @@ class AssetHelper:
         return AssetHelper.__get_font_from_asset_collection('FreeMono.ttf', size)
 
     @staticmethod
-    def resize_square(image, new_size=IMAGE_SMALL) -> Image:
-        return image.resize((new_size, new_size))
+    def get_unknown_card() -> Image:
+        return AssetHelper.__get_image_from_asset_collection('cards/XX.png')
+
+    @staticmethod
+    def resize(image, new_size_width=IMAGE_SMALL, new_size_height=IMAGE_SMALL) -> Image:
+        return image.resize((new_size_width, new_size_height))
 
     @staticmethod
     def __get_image_from_asset_collection(name: str) -> Image:
