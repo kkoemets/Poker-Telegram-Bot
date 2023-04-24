@@ -5,10 +5,12 @@ import traceback
 from threading import Timer
 from typing import List
 
+from PIL import Image
 from telegram import Message, ReplyKeyboardMarkup, Update, Bot
 from telegram.ext import Handler, CallbackContext
 
 from pokerapp.config import Config
+from pokerapp.constants import IMAGE_SMALL
 from pokerapp.entity.cards import Cards
 from pokerapp.entity.entities import (
     ChatId,
@@ -43,6 +45,7 @@ MIN_PLAYERS = 2
 ONE_DAY = 86400
 MAX_TIME_FOR_TURN = datetime.timedelta(minutes=2)
 DESCRIPTION_FILE = "assets/description_bot.md"
+POKER_HAND_FILE = "./assets/poker_hand.jpg"
 
 
 class PokerBotModel:
@@ -77,6 +80,8 @@ class PokerBotModel:
 
     @staticmethod
     def _current_turn_player(game: Game) -> Player:
+        assert len(game.players) > 0
+
         i = game.current_player_index % len(game.players)
         return game.players[i]
 
@@ -114,6 +119,7 @@ class PokerBotModel:
 
         player = Player(
             user_id=user.id,
+            user_name=user.full_name,
             mention_markdown=user.mention_markdown(),
             wallet=WalletManagerModel(user.id, self._kv),
             ready_message_id=update.effective_message.message_id,
@@ -172,7 +178,7 @@ class PokerBotModel:
                 chat_id=chat_id,
                 text=text,
             )
-            self._view.send_photo(chat_id=chat_id)
+            self._view.send_photo(chat_id=chat_id, photo=open(POKER_HAND_FILE, 'rb'))
 
             if update.effective_chat.type == 'private':
                 UserPrivateChatModel(user_id=user_id, kv=self._kv) \
@@ -718,3 +724,29 @@ class PokerBotModel:
             message_id=update.effective_message.message_id,
             text=f"Your wallet is topped up with {top_up_amount} $"
         )
+
+    def show_table(self, update, context):
+        from pokerapp.entity.poker_table_info import PokerTableInfo
+        from pokerapp.entity.poker_table_info import PokerTablePlayerInfo
+        from pokerapp.utils.asset_helper import AssetHelper
+
+        game = self._game_from_context(context)
+        chat_id = update.effective_message.chat_id
+        current_player = self._current_turn_player(game)
+
+        image_anonymous = AssetHelper.get_image_avatar_anonymous()
+        image_anonymous = AssetHelper.resize(image_anonymous, IMAGE_SMALL, IMAGE_SMALL)
+
+        poker_table_player_infos = []
+        for chair_id, player in enumerate(game.players):
+            poker_table_player_info = PokerTablePlayerInfo(
+                avatar=image_anonymous,  # TODO: add unique avatar for each player
+                name=player.user_name,
+                money=player.wallet.value(),
+                chair_id=chair_id,  # TODO: assume atm that the players are ordered; we need to persist the order
+                is_current_turn=player == current_player,
+            )
+            poker_table_player_infos.append(poker_table_player_info)
+        poker_table_info = PokerTableInfo(players=poker_table_player_infos)
+
+        self._view.show_poker_table_with_players(chat_id=chat_id, poker_table_info=poker_table_info)

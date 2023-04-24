@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
 from io import BytesIO
-
+from typing import Union
+from PIL import Image, ImageDraw
 from telegram import (
     Message,
     ParseMode,
@@ -11,7 +11,9 @@ from telegram import (
     Bot,
     InputMediaPhoto,
 )
+from telegram.utils.types import FileInput
 
+from pokerapp.constants import COLOR_WHITE, COLOR_BLACK, FONT_SIZE_MEDIUM, FRAME_STROKE
 from pokerapp.entity.cards import Cards
 from pokerapp.entity.entities import (
     MessageId,
@@ -22,6 +24,9 @@ from pokerapp.entity.entities import (
 from pokerapp.entity.game import Game
 from pokerapp.entity.player import Player
 from pokerapp.entity.playeraction import PlayerAction
+from pokerapp.entity.poker_table_info import PokerTableInfo, COMMON_CARD_WIDTH, COMMON_CARD_HEIGHT, \
+    COMMON_CARD_WIDTH_SMALL, COMMON_CARD_HEIGHT_SMALL
+from pokerapp.utils.asset_helper import AssetHelper
 from pokerapp.view.deskimagegenerator import DeskImageGenerator
 
 
@@ -45,11 +50,10 @@ class PokerBotViewer:
             disable_web_page_preview=True,
         )
 
-    def send_photo(self, chat_id: ChatId) -> None:
-        # TODO: photo to args.
+    def send_photo(self, chat_id: ChatId, photo: Union[FileInput]) -> None:
         self._bot.send_photo(
             chat_id=chat_id,
-            photo=open("./assets/poker_hand.jpg", 'rb'),
+            photo=photo,
             parse_mode=ParseMode.MARKDOWN,
             disable_notification=True,
         )
@@ -229,4 +233,65 @@ class PokerBotViewer:
         self._bot.delete_message(
             chat_id=chat_id,
             message_id=message_id,
+        )
+
+    def show_poker_table_with_players(self, chat_id: ChatId, poker_table_info: PokerTableInfo) -> Image:
+        image_poker_table = AssetHelper.get_image_poker_table()
+        table_width, table_height = image_poker_table.size
+        avatar_width, avatar_height = poker_table_info.avatar_max_size
+
+        # Create new image with the size of the table, make some extra room for avatars
+        new_image_width, new_image_height = table_width, table_height + avatar_height * 2
+        new_image = Image.new('RGB', (new_image_width, new_image_height), COLOR_WHITE)
+        new_image.paste(image_poker_table, (0, avatar_height))
+
+        # Get draw mode. It enables adding text as well as drawing shapes.
+        draw = ImageDraw.Draw(new_image)
+
+        # Draw 5 cards in the center of the table
+        unknown_card = AssetHelper.get_unknown_card()
+        unknown_card = AssetHelper.resize(unknown_card, COMMON_CARD_WIDTH, COMMON_CARD_HEIGHT)
+        for location in poker_table_info.common_card_locations:
+            new_image.paste(unknown_card, location)
+
+        # Draw all players
+        player_name_font = AssetHelper.get_font_free_mono(FONT_SIZE_MEDIUM)
+        player_unknown_card = AssetHelper.get_unknown_card()
+        player_unknown_card = AssetHelper.resize(player_unknown_card, COMMON_CARD_WIDTH_SMALL, COMMON_CARD_HEIGHT_SMALL)
+        for player in poker_table_info.players:
+            x, y = player.image_position_for_player
+            width_offset, height_offset = 80, 10  # used for measuring  relative distance between avatar, name & money
+
+            # Draw avatars
+            new_image.paste(player.avatar, (x, y))
+
+            # Draw player's name
+            draw.text((x - width_offset, y + avatar_height + height_offset), player.name, font=player_name_font, fill=COLOR_BLACK)
+
+            # Draw player's money
+            draw.text((x + 10, y + avatar_height + height_offset * 4), f'{player.money} $', font=player_name_font, fill=COLOR_BLACK, stroke_width=1)
+
+            # Draw a red frame around active player
+            if player.is_current_turn:
+                frame_x0 = x - FRAME_STROKE
+                frame_y0 = y - FRAME_STROKE
+                frame_x1 = frame_x0 + avatar_width + FRAME_STROKE * 2
+                frame_y1 = frame_y0 + avatar_height + FRAME_STROKE * 2
+                draw.rectangle((frame_x0, frame_y0, frame_x1, frame_y1), outline="red", width=5)
+
+            # draw player's cards
+            player_card_1_pos, player_card_2_pos = player.card_positions_for_player
+            new_image.paste(player_unknown_card, player_card_1_pos)
+            new_image.paste(player_unknown_card, player_card_2_pos)
+
+        # Finalize combined image. Convert the image into bytearray to keep it in memory and avoiding saving it to disk
+        with BytesIO() as output:
+            new_image.save(output, format='JPEG')
+            image_poker_table_with_players = output.getvalue()
+
+        self._bot.send_photo(
+            chat_id=chat_id,
+            photo=image_poker_table_with_players,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_notification=True,
         )
